@@ -21,11 +21,11 @@
 		</config-file>
 
 		<!-- frameworks -->
-		<framework src="AWSCore" type="podspec" spec=">= 2.5.3" />
-		<framework src="AWSCognito" type="podspec" spec=">= 2.5.3" />
-		<framework src="AWSCognitoIdentityProvider" type="podspec" spec=">= 2.5.3" />
-		<framework src="AWSLambda" type="podspec" spec=">= 2.5.3" />
-		<framework src="AWSAPIGateway" type="podspec" spec=">= 2.5.3" />
+		<framework src="src/AWSCore" type="podspec" spec=">= 2.5.3" />
+		<framework src="src/AWSCognito" type="podspec" spec=">= 2.5.3" />
+		<framework src="src/AWSCognitoIdentityProvider" type="podspec" spec=">= 2.5.3" />
+		<framework src="src/AWSLambda" type="podspec" spec=">= 2.5.3" />
+		<framework src="src/AWSAPIGateway" type="podspec" spec=">= 2.5.3" />
 	    <framework src="SystemConfiguration.framework" weak="true" />
 
         <header-file src="src/AwsUserPoolPlugin.h" />
@@ -34,4 +34,38 @@
         <source-file src="src/Reachability.m" />
 
 	</platform>
+	
+	<platform name="android">
+        <config-file target="res/xml/config.xml" parent="/widget">
+            <feature name="AwsUserPoolPlugin">
+                <param name="android-package" value="com.amarder.cordova.aws.userpool.AwsUserPoolPlugin"/>
+            </feature>
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+	 		<uses-permission android:name="android.permission.INTERNET" />
+    		<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    		<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />        
+     	</config-file>
+
+        <source-file src="src/android/AwsUserPoolPlugin.java"
+            target-dir="src/com/amarder/cordova/aws/userpool"/>
+		<source-file src="src/android/AppHelper.java"
+		    target-dir="src/com/amarder/cordova/aws/userpool"/>
+		<!-- This is needed to enable Java v 1.7 to avoid errors in aws sdk -->
+		<source-file src="src/android/lib/build-extras.gradle" target-dir="src/.." />
+        
+        <!-- UNUSED        
+   		<source-file src="src/android/CognitoConfig.java"
+		    target-dir="src/com/amarder/cordova/aws/userpool"/>             
+         -->
+        
+       <!-- AWS support -->
+        <framework src="com.amazonaws:aws-android-sdk-core:2.4.6" />
+        <framework src="com.amazonaws:aws-android-sdk-cognitoidentityprovider:2.4.6" />
+     
+
+    </platform>
+	
+	
 </plugin>

@@ -19,11 +19,18 @@
 
 var app = {
     // Set these variables with your values
-    CognitoIdentityUserPoolId: "eu-west-1_*********", 
+    /*CognitoIdentityUserPoolId: "eu-west-1_*********", 
     CognitoIdentityUserPoolAppClientId: "*********************", 
     CognitoIdentityUserPoolAppClientSecret: "************************",
     CognitoArnIdentityPoolId: "eu-west-1:********-****-****-****-************",
-
+	 */
+	 // Set these variables with your values
+    CognitoIdentityUserPoolId: "us-west-2_U8N1wdV1a", 
+    CognitoIdentityUserPoolAppClientId: "bvqnshg9qn4ta7tso7dafp1oq", 
+    CognitoIdentityUserPoolAppClientSecret: "",
+    CognitoArnIdentityPoolId: "us-west-2:527d62a2-0c4d-4468-854c-c8f2beefe241",
+		
+		
     signIn: 0,
     signUp: 1,
     data: 2,
@@ -45,15 +52,15 @@ var app = {
         document.getElementById("loginRegisterDiv").style.display = "block";
         document.getElementById("dataDiv").style.display = "none";
 
-        var CognitoRegion = AwsUserPoolPlugin.AwsUserPoolPluginEnum.EuWest1;
+        var CognitoRegion = AwsUserPoolPlugin.AwsUserPoolPluginEnum.UsWest2;
 
         this.awsUserPluginInstance = new AwsUserPoolPlugin({"CognitoIdentityUserPoolId": this.CognitoIdentityUserPoolId,
             "CognitoIdentityUserPoolAppClientId": this.CognitoIdentityUserPoolAppClientId,
             "CognitoIdentityUserPoolAppClientSecret": this.CognitoIdentityUserPoolAppClientSecret,
             "arnIdentityPoolId": this.CognitoArnIdentityPoolId, "CognitoRegion": CognitoRegion}, function() {
             console.log("connectionPluginInstance Init Ok");
-        }, function() {
-            console.log("connectionPluginInstance Init Fail");
+        }, function(err) {
+            console.log("connectionPluginInstance Init Fail: "+ err);
         });
     },
 

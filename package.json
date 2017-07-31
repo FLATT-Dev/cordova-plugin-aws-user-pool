@@ -5,7 +5,8 @@
   "cordova": {
     "id": "cordova-plugin-aws-user-pool",
     "platforms": [
-      "ios"
+      "ios",
+      "android"
     ]
   },
   "repository": {
@@ -16,7 +17,8 @@
     "aws",
     "userPool",
     "ecosystem:cordova",
-    "cordova-ios"
+    "cordova-ios",
+    "cordova-android"
   ],
   "engines": [
     {
