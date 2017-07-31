@@ -41,6 +41,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
+import org.apache.cordova.CordovaArgs;
+import org.apache.cordova.LOG;
+import org.json.*;
+
+
 public class AppHelper {
     // App settings
 
@@ -77,25 +83,25 @@ public class AppHelper {
     /**
      * Add your pool id here
      */
-    private static final String userPoolId = "replace_this_with_your_cognito_pool_id";
+    private static  String userPoolId = "replace_this_with_your_cognito_pool_id";
 
     /**
      * Add you app id
      */
-    private static final String clientId = "replace_this_with_app_client_id";
+    private static  String clientId = "replace_this_with_app_client_id";
 
     /**
      * App secret associated with your app id - if the App id does not have an associated App secret,
      * set the App secret to null.
      * e.g. clientSecret = null;
      */
-    private static final String clientSecret = "replace_this_with_the_app_client_secret";
+    private static  String clientSecret = "replace_this_with_the_app_client_secret";
 
     /**
      * Set Your User Pools region.
      * e.g. if your user pools are in US East (N Virginia) then set cognitoRegion = Regions.US_EAST_1.
      */
-    private static final Regions cognitoRegion = Regions.DEFAULT_REGION;
+    private static  Regions cognitoRegion = Regions.DEFAULT_REGION;
 
     // User details from the service
     private static CognitoUserSession currSession;
@@ -110,8 +116,26 @@ public class AppHelper {
 
     private static Set<String> currUserAttributes;
 
-    public static void init(Context context) {
-        setData();
+    public static void init(Context context,CordovaArgs args) throws JSONException{
+        
+    	/* parse the args */
+    	
+		JSONObject obj = new JSONObject(args.getString(0));
+		
+		userPoolId 		= obj.getString("CognitoIdentityUserPoolId");
+		clientId 		= obj.getString("CognitoIdentityUserPoolAppClientId");
+		clientSecret 	= obj.getString("CognitoIdentityUserPoolAppClientSecret");
+		//_identityPoolId 	= obj.getString("arnIdentityPoolId");
+		cognitoRegion 		= mapRegion(obj.getInt("CognitoRegion"));
+		
+		dumpValues();
+		
+		if(clientSecret.isEmpty()){
+			clientSecret  = null;
+		}
+		 
+		// original code
+    	setData();
 
         if (appHelper != null && userPool != null) {
             return;
@@ -504,6 +528,69 @@ public class AppHelper {
 
     private static void deleteAttribute(String attributeName) {
 
+    }
+    
+   //------------------------
+    public 	static  void dumpValues() {		
+		// debug
+    	LOG.d(AwsUserPoolPlugin.TAG,"---POOL PARAMETERS---");
+		LOG.d(AwsUserPoolPlugin.TAG,"_userPoolId:"		+ userPoolId);
+		LOG.d(AwsUserPoolPlugin.TAG,"_appClientId:"		+ clientId);
+		LOG.d(AwsUserPoolPlugin.TAG,"_appClientSecret:"	+ clientSecret);
+		//LOG.d(AwsUserPoolPlugin.TAG,"_identityPoolId:"	+_dentityPoolId);
+		LOG.d(AwsUserPoolPlugin.TAG,"_cognitoRegion:" 	+ cognitoRegion.toString());			
+	}
+    //--------------------
+    private static Regions mapRegion(int val)
+    {
+    	Regions ret = Regions.DEFAULT_REGION; // default to default region
+    	
+    	// XXX not all regions are added . See http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/regions/Regions.html
+    	 switch (val )
+         {
+            //case 0: -- zero is GovCloud - for some reason it's treated by the plugin as unknown.
+           //      ret = Regions.DEFAULT_REGION; self.CognitoIdentityUserPoolRegion = AWSRegionUnknown;
+         //        break;
+             case 1:
+            	 ret = Regions.US_EAST_1; // self.CognitoIdentityUserPoolRegion = AWSRegionUSEast1;
+                 break;
+             case 2:
+            	 ret = Regions.US_EAST_2; // self.CognitoIdentityUserPoolRegion = AWSRegionUSEast2;
+                 break;
+             case 3:
+            	 ret = Regions.US_WEST_1; // self.CognitoIdentityUserPoolRegion = AWSRegionUSWest1;
+                 break;
+             case 4:
+            	 ret = Regions.US_WEST_2; // ret = Regions.DEFAULT_REGION; // self.CognitoIdentityUserPoolRegion = AWSRegionUSWest2;
+                 break;
+             case 5:
+            	 ret = Regions.AP_SOUTH_1; // self.CognitoIdentityUserPoolRegion = AWSRegionAPSouth1;
+                 break;
+             case 6:
+            	 ret = Regions.AP_NORTHEAST_1; // self.CognitoIdentityUserPoolRegion = AWSRegionAPNortheast1;
+                 break;
+             case 7:
+            	 ret = Regions.AP_NORTHEAST_2; // self.CognitoIdentityUserPoolRegion = AWSRegionAPNortheast2;
+                 break;
+             case 8:
+            	 ret = Regions.AP_SOUTHEAST_1; // self.CognitoIdentityUserPoolRegion = AWSRegionAPSoutheast1;
+                 break;
+             case 9:
+            	 ret = Regions.AP_SOUTHEAST_2; // self.CognitoIdentityUserPoolRegion = AWSRegionAPSoutheast2;
+                 break;
+             case 10:
+            	 ret = Regions.EU_CENTRAL_1; // self.CognitoIdentityUserPoolRegion = AWSRegionEUCentral1;
+                 break;
+             case 11:
+            	 ret = Regions.EU_WEST_1; // self.CognitoIdentityUserPoolRegion = AWSRegionEUWest1;
+                 break;
+             case 12:
+            	 ret = Regions.EU_WEST_2; // self.CognitoIdentityUserPoolRegion = AWSRegionEUWest2;
+                 break;
+             default:
+            	 ret = Regions.DEFAULT_REGION; // 
+         }
+    	 return ret;
     }
 }
 

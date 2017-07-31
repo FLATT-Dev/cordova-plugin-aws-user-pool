@@ -52,8 +52,12 @@
             target-dir="src/com/amarder/cordova/aws/userpool"/>
 		<source-file src="src/android/AppHelper.java"
 		    target-dir="src/com/amarder/cordova/aws/userpool"/>
+		<source-file src="src/android/ItemToDisplay.java"
+		    target-dir="src/com/amarder/cordova/aws/userpool"/>
+
 		<!-- This is needed to enable Java v 1.7 to avoid errors in aws sdk -->
-		<source-file src="src/android/lib/build-extras.gradle" target-dir="src/.." />
+		<source-file src="src/android/lib/build-extras.gradle"
+			 target-dir="src/.." />
         
         <!-- UNUSED        
    		<source-file src="src/android/CognitoConfig.java"

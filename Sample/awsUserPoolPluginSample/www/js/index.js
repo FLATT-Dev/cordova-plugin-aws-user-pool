@@ -69,7 +69,7 @@ var app = {
         console.log("Connect");
         var email = document.getElementById("email").value;
         var password = document.getElementById("password").value;
-        var username = email.replace("@", "A");
+        var username = email; //email.replace("@", "A");
 
         var self = this;
 
@@ -82,7 +82,7 @@ var app = {
         }, function(err) {
             // Error : err
             console.log("Error signin :", err)
-            alert("Error :" + err.message);
+            alert("Error :" + err);
             if (err.__type == "UserNotConfirmedException"){
                 self.confirmSignUp(username);
             }
@@ -121,7 +121,7 @@ var app = {
             self.confirmSignUp(username);
         }, function(err) {
             console.log("err :", err);
-            alert("err :" + err.message);
+            alert("err :" + err);
         });
     },
 
@@ -180,8 +180,8 @@ var app = {
             }, function(err) {
                 console.log("error getUserDataCognitoSync :", err);
             });
-        }, function() {
-            console.log("error");
+        }, function(err ) {
+            console.log("error: "+ err);
         });
     },
 

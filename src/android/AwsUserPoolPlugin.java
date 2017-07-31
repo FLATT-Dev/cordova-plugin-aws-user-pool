@@ -23,8 +23,22 @@ import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
-
 import java.util.*;
+
+// AWS stuff
+
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoDevice;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUser;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserSession;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.AuthenticationContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.AuthenticationDetails;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.ChallengeContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.ForgotPasswordContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.MultiFactorAuthenticationContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.NewPasswordContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.AuthenticationHandler;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.ForgotPasswordHandler;
+
 
 //[AM] How to get logcat to display android crash stack trace
 //logcat AndroidRuntime:E *:S
@@ -51,6 +65,8 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
     public static final String TAG = "AwsUserPoolPlugin";
    
     private CallbackContext _curContext = null;
+    private static String _username;
+    private static String _password;
    // private static CognitoConfig _cognitoConfig = new CognitoConfig();
     
     
@@ -125,7 +141,7 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
            /* UUID[] serviceUUIDs = parseServiceUUIDList(args.getJSONArray(0));
             resetScanOptions();
             findLowEnergyDevices(callbackContext, serviceUUIDs, -1);*/
-        	handleSignIn();
+        	handleSignIn(args);
 
         } else if (action.equals(ACT_OFFLINE_SIGNIN)) {
 
@@ -235,71 +251,178 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
     		/*if(!_cognitoConfig.init(args)){
     			throw (new Error("Error initializing cognito config"));   							
     		}*/   	
-    		AppHelper.init(cordova.getActivity().getApplicationContext());
+    		AppHelper.init(cordova.getActivity().getApplicationContext(),args);
     		LOG.d(TAG,"Initialized App Helper object");   
+    		_curContext.success();
     	}	
     	catch(Error e){
     		_curContext.error("Exception : "+e.getMessage());
     	} 
     	catch(JSONException jsonExp){
     		_curContext.error("JSON Exception : "+jsonExp.getMessage());
-    	}    	
-    	_curContext.error("Init not yet implemented on Android");
+    	}    	  	 
     }
     //------------------------------------
-    private void handleSignIn(){
+    private void handleSignIn(CordovaArgs args){
     	
+    	try{
+    		
+    		JSONObject obj = new JSONObject(args.getString(0));
+    		_username = obj.getString("username");
+    		_password = obj.getString("password");
+    		AppHelper.setUser(_username);
+    		AppHelper.getPool().getUser(_username).getSessionInBackground(authenticationHandler);
+    		// tell cordova that action is in progress
+    		setActionInProgressResponse();   		
+    	}	
+    	catch(Error e){
+    		_curContext.error("Exception : "+e.getMessage());
+    	} 
+    	catch(JSONException jsonExp){
+    		_curContext.error("JSON Exception : "+jsonExp.getMessage());
+    	}    	  	    	
     }
     //------------------------------------
     private void handleOfflineSignIn(){
-    	
+    	_curContext.error("Offline sign-in not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleSignOut(){
-    	
+    	_curContext.error("Sign out not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleSignUp(){
-    	
+    	_curContext.error("Sign up not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleConfirmSignUp(){
-    	
+    	_curContext.error("Confirm sign up not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleForgotPassword(){
-    	
+    	_curContext.error("Forgot password  not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleUpdatePassword(){
-    	
+    	_curContext.error("Update password  not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleGetDetails(){
-    	
+    	_curContext.error("Get Details not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleResendConfCode(){
-    	
+    	_curContext.error("Resent confirmation  not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleCreateCognitoDataset(){
-    	
+    	_curContext.error("Create Cognito Dataset not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleGetUserDataCognitoSync(){
-    	
+    	_curContext.error("Get User data  not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleSetUserDataCognitoSync(){
-    	
+    	_curContext.error("Set user data  not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleCallLambdaFunc(){
-    	
+    	_curContext.error("Call Lambda function  not yet implemenetd on Android");
     }
     //------------------------------------
+    // Callback that indicates that we're in progress
+    private  void setActionInProgressResponse() {
+ 		PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
+	    result.setKeepCallback(true);
+	    _curContext.sendPluginResult(result);
+    }
     
+	//---------------------------------------
+	private void getUserAuthentication(AuthenticationContinuation continuation, String username) {
+	    
+	    LOG.d(TAG,"Getting user authentication with username: "+ _username + ". password: " + _password);
+	    AuthenticationDetails authenticationDetails = new AuthenticationDetails(_username, _password, null);
+	    continuation.setAuthenticationDetails(authenticationDetails);
+	    continuation.continueTask();
+	}
+	//======================================
+
+
+	//
+	AuthenticationHandler authenticationHandler = new AuthenticationHandler() {
+	    @Override
+	    public void onSuccess(CognitoUserSession cognitoUserSession, CognitoDevice device) {
+	        LOG.d(TAG, "Auth Success");
+	        AppHelper.setCurrSession(cognitoUserSession);
+	        AppHelper.newDevice(device);     
+	        _curContext.success();
+	    }
+	
+	    @Override
+	    public void getAuthenticationDetails(AuthenticationContinuation authenticationContinuation, String username) {
+	        Locale.setDefault(Locale.US);
+	        getUserAuthentication(authenticationContinuation, username);
+	    }
+	
+	    @Override
+	    public void getMFACode(MultiFactorAuthenticationContinuation multiFactorAuthenticationContinuation) {
+	       // mfaAuth(multiFactorAuthenticationContinuation);
+	    	_curContext.error("MFA not yet implemenetd on Android");
+	    }
+	
+	    @Override
+	    public void onFailure(Exception e) {
+	    	
+	    	String formattedError = AppHelper.formatException(e);    	
+	    	LOG.d(TAG,"Sign-in failed: "+ formattedError);
+	    	_curContext.error("Sign-in failed: " + formattedError);
+	    	
+	    	/*
+	        closeWaitDialog();
+	        TextView label = (TextView) findViewById(R.id.textViewUserIdMessage);
+	        label.setText("Sign-in failed");
+	        inPassword.setBackground(getDrawable(R.drawable.text_border_error));
+	
+	        label = (TextView) findViewById(R.id.textViewUserIdMessage);
+	        label.setText("Sign-in failed");
+	        inUsername.setBackground(getDrawable(R.drawable.text_border_error));
+	
+	        showDialogMessage("Sign-in failed", AppHelper.formatException(e));*/
+	    }
+	
+	    @Override
+	    public void authenticationChallenge(ChallengeContinuation continuation) {
+	        
+	    	_curContext.error("Authentication challenge not yet implemented on Android ");
+	    	/**
+	         * For Custom authentication challenge, implement your logic to present challenge to the
+	         * user and pass the user's responses to the continuation.
+	         */
+	    	/*
+	        if ("NEW_PASSWORD_REQUIRED".equals(continuation.getChallengeName())) {
+	            // This is the first sign-in attempt for an admin created user
+	            newPasswordContinuation = (NewPasswordContinuation) continuation;
+	            AppHelper.setUserAttributeForDisplayFirstLogIn(newPasswordContinuation.getCurrentUserAttributes(),
+	                    newPasswordContinuation.getRequiredAttributes());
+	            closeWaitDialog();
+	            firstTimeSignIn();
+	        }*/
+	    }
+	};
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
     private UUID[] parseServiceUUIDList(JSONArray jsonArray) throws JSONException {
         List<UUID> serviceUUIDs = new ArrayList<UUID>();
