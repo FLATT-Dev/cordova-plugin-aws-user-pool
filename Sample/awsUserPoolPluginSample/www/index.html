@@ -40,10 +40,11 @@
     </head>
     <body class="body" id="deviceready">
         <div class="topRight">
-            <input type="button" id="topSwitchButton" value="signUp" onclick="app.switch()"/>
+            <input type="button" id="topSwitchButton" value="signUp" onclick="app.validate()"/>
         </div>
         <div id="loginRegisterDiv">
             <div class="app">
+            	<input type="email" id="username" placeholder="username"/>
                 <input type="email" id="email" placeholder="email"/>
                 <br>
                 <input type="password" id="password" placeholder="password"/>

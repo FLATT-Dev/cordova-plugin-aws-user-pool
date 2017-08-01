@@ -300,19 +300,18 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
     	try{
     		
     		JSONObject obj = new JSONObject(args.getString(0));
-    		JSONObject attrs = obj.getJSONObject ("attributes");
+    		JSONArray attrsArray = obj.getJSONArray ("attributes");
     		
     		CognitoUserAttributes userAttributes = null;
-    		if(attrs != null) {
+    		if(attrsArray != null) {
     			userAttributes = new CognitoUserAttributes();
-    			// iterate the known attributes and see if they are present in the  attributes object
-    			// received from Javascript
-    			for (String key : AppHelper.getSignUpFieldsC2O().keySet()) {
-    			    if(attrs.has(key)) {
-    			    	userAttributes.addAttribute(key, attrs.getString(key));  
-    			    	LOG.d(TAG,"Adding attribute: key = "+key + ",val = "+ attrs.getString(key));
-    			    }
-    			}
+    			// Iterate an array of name-value json objects
+    			for(int i = 0; i < attrsArray.length(); ++i){
+    				
+    				JSONObject curObj = attrsArray.getJSONObject(i);
+    				userAttributes.addAttribute(curObj.getString("name"), curObj.getString("value"));  
+    				LOG.d(TAG,"Adding attribute: " + curObj.getString("name") + " = " + curObj.getString("value"));
+    			}  			
     		}
     		// username is called id for whatever reason in the iOS version of the plugin
     		_username = obj.getString("id");
