@@ -25,11 +25,7 @@ var app = {
     CognitoArnIdentityPoolId: "eu-west-1:********-****-****-****-************",
 	 */
 	 // Set these variables with your values
-    CognitoIdentityUserPoolId: "us-west-2_U8N1wdV1a", 
-    CognitoIdentityUserPoolAppClientId: "bvqnshg9qn4ta7tso7dafp1oq", 
-    CognitoIdentityUserPoolAppClientSecret: "",
-    CognitoArnIdentityPoolId: "us-west-2:527d62a2-0c4d-4468-854c-c8f2beefe241",
-		
+   
 		
     signIn: 0,
     signUp: 1,
