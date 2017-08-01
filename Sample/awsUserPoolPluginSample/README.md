@@ -1,3 +1,14 @@
+#NOTE TO ANDROID DEVELOPERS
+Added Android support for basic login and registration without confirmation. 
+Login takes about 2 seconds on my low end Galaxy 3 - a bit better than 10-15 seconds it took with AWS javascript ....
+The sample app sign up button does not work -  don't have time to  tinker with it.
+That's all I need at the moment. Feel free to contribute
+I'm going to add features as I need them in my project
+
+Andy
+
+
+-----------------------------------------------
 # How to make sample work
 
 1) Change the credential :
