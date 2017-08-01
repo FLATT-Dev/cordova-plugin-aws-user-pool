@@ -77,7 +77,7 @@ public class AppHelper {
     private static int firstTimeLogInItemsCount;
     private static Map<String, String> firstTimeLogInUpDatedAttributes;
     private static String firstTimeLoginNewPassword;
-
+   
     // Change the next three lines of code to run this demo on your user pool
 
     /**
@@ -127,6 +127,7 @@ public class AppHelper {
 		clientSecret 	= obj.getString("CognitoIdentityUserPoolAppClientSecret");
 		//_identityPoolId 	= obj.getString("arnIdentityPoolId");
 		cognitoRegion 		= mapRegion(obj.getInt("CognitoRegion"));
+		
 		
 		dumpValues();
 		
@@ -592,5 +593,6 @@ public class AppHelper {
          }
     	 return ret;
     }
+   
 }
 

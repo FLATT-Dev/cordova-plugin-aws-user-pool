@@ -26,16 +26,25 @@ import org.json.JSONException;
 import java.util.*;
 
 // AWS stuff
-
+import com.amazonaws.auth.AWSCognitoIdentityProvider;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoDevice;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUser;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserSession;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserAttributes;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserCodeDeliveryDetails;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserDetails;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserPool;
+
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.AuthenticationContinuation;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.AuthenticationDetails;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.ChallengeContinuation;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.ForgotPasswordContinuation;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.MultiFactorAuthenticationContinuation;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.NewPasswordContinuation;
+
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.GenericHandler;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.GetDetailsHandler;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.SignUpHandler;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.AuthenticationHandler;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.ForgotPasswordHandler;
 
@@ -67,6 +76,7 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
     private CallbackContext _curContext = null;
     private static String _username;
     private static String _password;
+    
    // private static CognitoConfig _cognitoConfig = new CognitoConfig();
     
     
@@ -158,7 +168,7 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
 
             //String macAddress = args.getString(0);
            // connect(callbackContext, macAddress);
-        	handleSignUp();
+        	handleSignUp(args);
 
         } else if (action.equals(ACT_CONFIRM_SIGNUP )) {
 
@@ -252,6 +262,7 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
     			throw (new Error("Error initializing cognito config"));   							
     		}*/   	
     		AppHelper.init(cordova.getActivity().getApplicationContext(),args);
+    		
     		LOG.d(TAG,"Initialized App Helper object");   
     		_curContext.success();
     	}	
@@ -291,9 +302,42 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
     	_curContext.error("Sign out not yet implemenetd on Android");
     }
     //------------------------------------
-    private void handleSignUp(){
-    	_curContext.error("Sign up not yet implemenetd on Android");
+    private void handleSignUp(CordovaArgs args){
+    	
+    	try{
+    		
+    		JSONObject obj = new JSONObject(args.getString(0));
+    		JSONObject attrs = obj.getJSONObject ("attributes");
+    		
+    		CognitoUserAttributes userAttributes = null;
+    		if(attrs != null) {
+    			userAttributes = new CognitoUserAttributes();
+    			// iterate the known attributes and see if  the attributes object has it
+    			for (String key : AppHelper.getSignUpFieldsC2O().keySet()) {
+    			    if(attrs.has(key)) {
+    			    	userAttributes.addAttribute(key, attrs.getString(key));  
+    			    	LOG.d(TAG,"Adding attr: key = "+key + ",val = "+ attrs.getString(key));
+    			    }
+    			}
+    		}
+    		// called id for whatever reason in the iOS 
+    		_username = obj.getString("id");
+    		_password = obj.getString("password");
+    		
+    		AppHelper.getPool().signUpInBackground(_username, _password, userAttributes, null, signUpHandler);
+    		
+    		// tell cordova that action is in progress
+    		setActionInProgressResponse();   		
+    	}	
+    	catch(Error e){
+    		_curContext.error("Exception : "+e.getMessage());
+    	} 
+    	catch(JSONException jsonExp){
+    		_curContext.error("JSON Exception : "+jsonExp.getMessage());
+    	} 
     }
+    
+    
     //------------------------------------
     private void handleConfirmSignUp(){
     	_curContext.error("Confirm sign up not yet implemenetd on Android");
@@ -346,6 +390,8 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
 	    continuation.setAuthenticationDetails(authenticationDetails);
 	    continuation.continueTask();
 	}
+	//--------------------------------------
+	
 	//======================================
 
 
@@ -411,7 +457,24 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
 	    }
 	};
 
+	//================================
+	
+	SignUpHandler signUpHandler = new SignUpHandler() {
+        @Override
+        public void onSuccess(CognitoUser user, boolean signUpConfirmationState,
+                              CognitoUserCodeDeliveryDetails cognitoUserCodeDeliveryDetails) {
+        	_curContext.success();
+        }
+        //-----------------------------------
+        @Override
+        public void onFailure(Exception exception) {
+        	
+	    	String formattedError = AppHelper.formatException(exception);    	
+	    	LOG.d(TAG,"Sign up failed: "+ formattedError);
+	    	_curContext.error("Sign up failed: " + formattedError);
 
+        }
+    };
 
 
 
