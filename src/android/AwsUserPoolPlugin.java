@@ -77,9 +77,7 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
     private static String _username;
     private static String _password;
     
-   // private static CognitoConfig _cognitoConfig = new CognitoConfig();
-    
-    
+  
     /*callbacks
     CallbackContext discoverCallback;
     private CallbackContext enableBluetoothCallback;
@@ -266,12 +264,12 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
     		LOG.d(TAG,"Initialized App Helper object");   
     		_curContext.success();
     	}	
-    	catch(Error e){
-    		_curContext.error("Exception : "+e.getMessage());
+    	catch(Exception e){
+    		setActionFailResponse("Exception in handleInit: ",e);
     	} 
-    	catch(JSONException jsonExp){
-    		_curContext.error("JSON Exception : "+jsonExp.getMessage());
-    	}    	  	 
+    	/*catch(JSONException jsonExp){
+    		setActionFailResponse("JSON Exception in handleInit: ",jsonExp);    		
+    	} */   	  	 
     }
     //------------------------------------
     private void handleSignIn(CordovaArgs args){
@@ -281,25 +279,20 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
     		JSONObject obj = new JSONObject(args.getString(0));
     		_username = obj.getString("username");
     		_password = obj.getString("password");
+    		
     		AppHelper.setUser(_username);
     		AppHelper.getPool().getUser(_username).getSessionInBackground(authenticationHandler);
-    		// tell cordova that action is in progress
+    		// tell Javascript that action is in progress
     		setActionInProgressResponse();   		
     	}	
-    	catch(Error e){
-    		_curContext.error("Exception : "+e.getMessage());
+    	catch(Exception e){
+    		setActionFailResponse("Exception in handleSignIn: ",e);
+    		
     	} 
-    	catch(JSONException jsonExp){
-    		_curContext.error("JSON Exception : "+jsonExp.getMessage());
-    	}    	  	    	
-    }
-    //------------------------------------
-    private void handleOfflineSignIn(){
-    	_curContext.error("Offline sign-in not yet implemenetd on Android");
-    }
-    //------------------------------------
-    private void handleSignOut(){
-    	_curContext.error("Sign out not yet implemenetd on Android");
+    	/*
+    	catch(JSONException jsonExp){  		
+    		setActionFailResponse("JSON Exception in handleSignIn: ",jsonExp);  
+    	}    */	  	    	
     }
     //------------------------------------
     private void handleSignUp(CordovaArgs args){
@@ -312,74 +305,92 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
     		CognitoUserAttributes userAttributes = null;
     		if(attrs != null) {
     			userAttributes = new CognitoUserAttributes();
-    			// iterate the known attributes and see if  the attributes object has it
+    			// iterate the known attributes and see if they are present in the  attributes object
+    			// received from Javascript
     			for (String key : AppHelper.getSignUpFieldsC2O().keySet()) {
     			    if(attrs.has(key)) {
     			    	userAttributes.addAttribute(key, attrs.getString(key));  
-    			    	LOG.d(TAG,"Adding attr: key = "+key + ",val = "+ attrs.getString(key));
+    			    	LOG.d(TAG,"Adding attribute: key = "+key + ",val = "+ attrs.getString(key));
     			    }
     			}
     		}
-    		// called id for whatever reason in the iOS 
+    		// username is called id for whatever reason in the iOS version of the plugin
     		_username = obj.getString("id");
     		_password = obj.getString("password");
     		
     		AppHelper.getPool().signUpInBackground(_username, _password, userAttributes, null, signUpHandler);
     		
-    		// tell cordova that action is in progress
+    		// tell Javascript that action is in progress
     		setActionInProgressResponse();   		
     	}	
-    	catch(Error e){
-    		_curContext.error("Exception : "+e.getMessage());
+    	catch(Exception e){
+    		setActionFailResponse("Exception in handleSignup: ",e);   		
     	} 
-    	catch(JSONException jsonExp){
-    		_curContext.error("JSON Exception : "+jsonExp.getMessage());
-    	} 
-    }
-    
-    
+    	/*catch(JSONException jsonExp){
+    		setActionFailResponse("JSON Exception in handleSignup: ",jsonExp);
+    	} */
+    }  
     //------------------------------------
+    private void handleOfflineSignIn(){
+    	setActionFailResponse("Offline sign-in not yet implemenetd on Android");
+    }
+    //------------------------------------
+    private void handleSignOut(){
+    	setActionFailResponse("Sign out not yet implemenetd on Android");
+    }
+     //------------------------------------
     private void handleConfirmSignUp(){
-    	_curContext.error("Confirm sign up not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleForgotPassword(){
-    	_curContext.error("Forgot password  not yet implemenetd on Android");
+    	setActionFailResponse("Forgot password  not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleUpdatePassword(){
-    	_curContext.error("Update password  not yet implemenetd on Android");
+    	setActionFailResponse("Update password  not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleGetDetails(){
-    	_curContext.error("Get Details not yet implemenetd on Android");
+    	setActionFailResponse("Get Details not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleResendConfCode(){
-    	_curContext.error("Resent confirmation  not yet implemenetd on Android");
+    	setActionFailResponse("Resent confirmation  not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleCreateCognitoDataset(){
-    	_curContext.error("Create Cognito Dataset not yet implemenetd on Android");
+    	setActionFailResponse("Create Cognito Dataset not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleGetUserDataCognitoSync(){
-    	_curContext.error("Get User data  not yet implemenetd on Android");
+    	setActionFailResponse("Get User data  not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleSetUserDataCognitoSync(){
-    	_curContext.error("Set user data  not yet implemenetd on Android");
+    	setActionFailResponse("Set user data  not yet implemenetd on Android");
     }
     //------------------------------------
     private void handleCallLambdaFunc(){
-    	_curContext.error("Call Lambda function  not yet implemenetd on Android");
+    	setActionFailResponse("Call Lambda function  not yet implemenetd on Android");
     }
     //------------------------------------
-    // Callback that indicates that we're in progress
+    // Callback that indicates that the plugin has an action in progress
     private  void setActionInProgressResponse() {
  		PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
 	    result.setKeepCallback(true);
 	    _curContext.sendPluginResult(result);
+    }
+    //-----------------------------------------------------
+    // Notify Javascript that an action resulted in an error
+    private void setActionFailResponse(String message, Exception e){
+    	String messg = message + ( e == null ? "" : AppHelper.formatException(e));  	
+    	LOG.d(TAG, messg);
+    	_curContext.error(messg);    	
+    }
+    
+    //-------------------------------------------
+    private void setActionFailResponse(String message){
+    	setActionFailResponse(message, null);
     }
     
 	//---------------------------------------
@@ -390,12 +401,10 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
 	    continuation.setAuthenticationDetails(authenticationDetails);
 	    continuation.continueTask();
 	}
-	//--------------------------------------
-	
-	//======================================
-
-
 	//
+	
+	//============== Sign up and sign in auth handlers ========================
+
 	AuthenticationHandler authenticationHandler = new AuthenticationHandler() {
 	    @Override
 	    public void onSuccess(CognitoUserSession cognitoUserSession, CognitoDevice device) {
@@ -414,33 +423,19 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
 	    @Override
 	    public void getMFACode(MultiFactorAuthenticationContinuation multiFactorAuthenticationContinuation) {
 	       // mfaAuth(multiFactorAuthenticationContinuation);
-	    	_curContext.error("MFA not yet implemenetd on Android");
+	    	setActionFailResponse("Multi Factor Authentication not yet implemenetd on Android");
 	    }
 	
 	    @Override
 	    public void onFailure(Exception e) {
 	    	
-	    	String formattedError = AppHelper.formatException(e);    	
-	    	LOG.d(TAG,"Sign-in failed: "+ formattedError);
-	    	_curContext.error("Sign-in failed: " + formattedError);
-	    	
-	    	/*
-	        closeWaitDialog();
-	        TextView label = (TextView) findViewById(R.id.textViewUserIdMessage);
-	        label.setText("Sign-in failed");
-	        inPassword.setBackground(getDrawable(R.drawable.text_border_error));
-	
-	        label = (TextView) findViewById(R.id.textViewUserIdMessage);
-	        label.setText("Sign-in failed");
-	        inUsername.setBackground(getDrawable(R.drawable.text_border_error));
-	
-	        showDialogMessage("Sign-in failed", AppHelper.formatException(e));*/
+	    	setActionFailResponse("Sign in failed: ", e);	    	
 	    }
 	
 	    @Override
 	    public void authenticationChallenge(ChallengeContinuation continuation) {
 	        
-	    	_curContext.error("Authentication challenge not yet implemented on Android ");
+	    	setActionFailResponse("Authentication challenge not yet implemented on Android ");
 	    	/**
 	         * For Custom authentication challenge, implement your logic to present challenge to the
 	         * user and pass the user's responses to the continuation.
@@ -457,8 +452,7 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
 	    }
 	};
 
-	//================================
-	
+	//================================	
 	SignUpHandler signUpHandler = new SignUpHandler() {
         @Override
         public void onSuccess(CognitoUser user, boolean signUpConfirmationState,
@@ -467,12 +461,8 @@ public class AwsUserPoolPlugin extends CordovaPlugin  {
         }
         //-----------------------------------
         @Override
-        public void onFailure(Exception exception) {
-        	
-	    	String formattedError = AppHelper.formatException(exception);    	
-	    	LOG.d(TAG,"Sign up failed: "+ formattedError);
-	    	_curContext.error("Sign up failed: " + formattedError);
-
+        public void onFailure(Exception exception) {        	
+        	setActionFailResponse("Sign up failed :",exception);	    	
         }
     };
 

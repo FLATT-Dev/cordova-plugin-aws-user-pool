@@ -25,7 +25,7 @@ var app = {
     CognitoArnIdentityPoolId: "eu-west-1:********-****-****-****-************",
 	 */
 	 // Set these variables with your values
-   
+				
 		
     signIn: 0,
     signUp: 1,
